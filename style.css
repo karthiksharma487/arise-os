@@ -28,3 +28,4 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-ser
 .cyan-text { color: var(--accent); }
 .green-text { color: var(--success); }
 .reset-link { margin-top: 40px; background: none; border: none; color: var(--quit); opacity: 0.4; cursor: pointer; }
+
