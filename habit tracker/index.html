@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solo Leveling: Arise OS</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="stats-box">
+            <div class="header-flex">
+                <div>
+                    <div id="rankDisplay">E-RANK HUNTER</div>
+                    <div id="levelDisplay">LVL 1</div>
+                </div>
+                <button class="btn secondary" onclick="toggleModal(true)">SYSTEM LOGS</button>
+            </div>
+            <div class="bar-container">
+                <div class="bar-label"><span>HEALTH (HP)</span> <span id="hpValue">100 / 100</span></div>
+                <div class="bar-bg"><div id="hpFill" class="bar-fill hp-fill"></div></div>
+            </div>
+            <div class="bar-container">
+                <div class="bar-label"><span>EXPERIENCE (XP)</span> <span id="xpValue">0 / 100</span></div>
+                <div class="bar-bg"><div id="xpFill" class="bar-fill xp-fill"></div></div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="column">
+                <h3 class="cyan-text">DAILY QUESTS</h3>
+                <div class="input-group">
+                    <input type="text" id="tIn" placeholder="Enter quest...">
+                    <button class="btn" onclick="addT()">+</button>
+                </div>
+                <div id="tList"></div>
+                <h3 class="yellow-text" style="margin-top:30px;">RECOVERY</h3>
+                <div class="input-group">
+                    <input type="number" id="sIn" placeholder="Hours">
+                    <button class="btn" onclick="addS()">LOG</button>
+                </div>
+                <div class="chart-box"><canvas id="sleepChart"></canvas></div>
+            </div>
+
+            <div class="column">
+                <h3 class="green-text">SKILL EVOLUTION</h3>
+                <div class="input-group">
+                    <input type="text" id="hIn" placeholder="Skill name...">
+                    <select id="hType">
+                        <option value="good">BUILD</option>
+                        <option value="quit">QUIT</option>
+                    </select>
+                    <button class="btn" onclick="addH()">+</button>
+                </div>
+                <div class="scroll-area" id="hList"></div>
+            </div>
+        </div>
+        <center><button class="reset-link" onclick="resetSystem()">RESET SYSTEM</button></center>
+    </div>
+
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <h2 class="cyan-text">PLAYER ARCHIVE</h2>
+            <div id="historyBody"></div>
+            <div id="calendarGrid" class="calendar-grid"></div>
+            <button class="btn wide" onclick="toggleModal(false)" style="margin-top:20px; width:100%">RETURN</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
