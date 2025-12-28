@@ -3,53 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARISE OS - SYSTEM</title>
+    <title>ARISE OS</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="system-container">
-        <div id="name-modal" class="modal hidden">
-            <div class="modal-content">
-                <p class="system-msg">[ SYSTEM: IDENTIFY YOURSELF ]</p>
-                <input type="text" id="name-input" placeholder="ENTER NAME...">
-                <button onclick="saveName()">INITIALIZE</button>
+    <div class="system-box">
+        <div class="header">
+            <p id="time-greeting">[ SYSTEM: INITIALIZING... ]</p>
+            <h1>HUNTER: <span id="display-name" onclick="changeName()">CLICK TO SET NAME</span></h1>
+            <div class="rank">S-RANK</div>
+        </div>
+
+        <div class="stats">
+            <p>LEVEL: <span id="lvl">1</span></p>
+            <div class="exp-container">
+                <div id="exp-bar"></div>
             </div>
         </div>
 
-        <header>
-            <div id="greeting" class="system-msg">[ SYSTEM: AWAKENING... ]</div>
-            <h1 id="hunter-display">HUNTER: <span class="glow-text">UNIDENTIFIED</span></h1>
-            <div class="rank-badge">S-RANK</div>
-        </header>
-
-        <section class="stats">
-            <div class="stat-item">
-                <label>LEVEL: <span id="level-val">1</span></label>
-                <div class="bar-container">
-                    <div id="exp-bar" class="bar-fill exp-fill"></div>
-                </div>
+        <div class="tasks">
+            <h3>DAILY QUESTS</h3>
+            <div class="task-card">
+                <span>Push-ups (0/100)</span>
+                <button onclick="addXP(20)">DONE</button>
             </div>
-        </section>
-
-        <section class="quest-list">
-            <h3>DAILY QUEST: THE PATH TO POWER</h3>
-            <div class="quest-item">
-                <span>Strength Training</span>
-                <button onclick="completeTask(20)">COMPLETE</button>
+            <div class="task-card">
+                <span>Running (0/10km)</span>
+                <button onclick="addXP(20)">DONE</button>
             </div>
-            <div class="quest-item">
-                <span>Intelligence Study</span>
-                <button onclick="completeTask(20)">COMPLETE</button>
+            <div class="task-card">
+                <span>Shadow Training</span>
+                <button onclick="addXP(20)">DONE</button>
             </div>
-            <div class="quest-item">
-                <span>Shadow Extraction</span>
-                <button onclick="completeTask(20)">COMPLETE</button>
-            </div>
-        </section>
-
-        <div id="notification" class="hidden">LEVEL UP!</div>
+        </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
