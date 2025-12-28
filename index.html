@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,10 +32,16 @@
             <div class="column">
                 <h3 class="cyan-text">DAILY QUESTS</h3>
                 <div class="input-group">
-                    <input type="text" id="tIn" placeholder="New quest...">
+                    <input type="text" id="tIn" placeholder="Enter quest...">
                     <button class="btn" onclick="addT()">+</button>
                 </div>
                 <div id="tList"></div>
+                <h3 class="yellow-text" style="margin-top:30px;">RECOVERY</h3>
+                <div class="input-group">
+                    <input type="number" id="sIn" placeholder="Hours">
+                    <button class="btn" onclick="addS()">LOG</button>
+                </div>
+                <div class="chart-box"><canvas id="sleepChart"></canvas></div>
             </div>
 
             <div class="column">
@@ -42,7 +49,7 @@
                 <div class="input-group">
                     <input type="text" id="hIn" placeholder="Skill name...">
                     <select id="hType">
-                        <option value="build">BUILD</option>
+                        <option value="good">BUILD</option>
                         <option value="quit">QUIT</option>
                     </select>
                     <button class="btn" onclick="addH()">+</button>
@@ -50,12 +57,12 @@
                 <div class="scroll-area" id="hList"></div>
             </div>
         </div>
-        <center><button class="reset-link" onclick="resetSystem()">RESET SYSTEM DATA</button></center>
+        <center><button class="reset-link" onclick="resetSystem()">RESET SYSTEM</button></center>
     </div>
 
     <div id="historyModal" class="modal">
         <div class="modal-content">
-            <h2 class="cyan-text">SYSTEM ARCHIVE</h2>
+            <h2 class="cyan-text">PLAYER ARCHIVE</h2>
             <div id="historyBody"></div>
             <div id="calendarGrid" class="calendar-grid"></div>
             <button class="btn wide" onclick="toggleModal(false)" style="margin-top:20px; width:100%">RETURN</button>
