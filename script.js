@@ -4,12 +4,20 @@ let state = JSON.parse(localStorage.getItem('solo_arise_pro')) || {
     activeDays: [], damageDays: [], lastLogin: new Date().toDateString()
 };
 
-function save() { localStorage.setItem('solo_arise_pro', JSON.stringify(state)); render(); }
+function save() { 
+    localStorage.setItem('solo_arise_pro', JSON.stringify(state)); 
+    render(); 
+}
 
 function gainXP(amt) {
     state.xp += amt;
     const needed = state.lvl * 100;
-    if(state.xp >= needed) { state.xp -= needed; state.lvl++; state.hp = 100; alert("✨ LEVEL UP: HP FULLY RESTORED"); }
+    if(state.xp >= needed) { 
+        state.xp -= needed; 
+        state.lvl++; 
+        state.hp = 100; 
+        alert("✨ LEVEL UP: HP FULLY RESTORED"); 
+    }
     const today = new Date().toDateString();
     if(!state.activeDays.includes(today)) state.activeDays.push(today);
     save();
@@ -42,9 +50,11 @@ function handleHabit(index, success) {
 }
 
 function addT() {
-    const val = document.getElementById('tIn').value; if(!val) return;
+    const val = document.getElementById('tIn').value; 
+    if(!val) return;
     state.tasks.push({ text: val, done: false });
-    document.getElementById('tIn').value = ''; save();
+    document.getElementById('tIn').value = ''; 
+    save();
 }
 
 function completeTask(i) {
@@ -59,13 +69,18 @@ function addH() {
     const t = document.getElementById('hType').value;
     if(!n) return;
     state.habits.push({ id: Date.now(), name: n, type: t, history: [0], lastLogged: '' });
-    document.getElementById('hIn').value = ''; save();
+    document.getElementById('hIn').value = ''; 
+    save();
 }
 
 function render() {
     const needed = state.lvl * 100;
-    document.getElementById('rankDisplay').innerText = state.lvl >= 10 ? "B-RANK HUNTER" : "E-RANK HUNTER";
-    document.getElementById('levelDisplay').innerText = "LVL " + state.lvl;
+    const rankDisp = document.getElementById('rankDisplay');
+    const lvlDisp = document.getElementById('levelDisplay');
+    
+    if(rankDisp) rankDisp.innerText = state.lvl >= 10 ? "B-RANK HUNTER" : "E-RANK HUNTER";
+    if(lvlDisp) lvlDisp.innerText = "LVL " + state.lvl;
+    
     document.getElementById('hpFill').style.width = state.hp + "%";
     document.getElementById('xpFill').style.width = (state.xp / needed) * 100 + "%";
     document.getElementById('hpValue').innerText = `${state.hp} / 100`;
@@ -78,7 +93,8 @@ function render() {
         </div>
     `).join('');
 
-    const hList = document.getElementById('hList'); hList.innerHTML = '';
+    const hList = document.getElementById('hList'); 
+    hList.innerHTML = '';
     state.habits.forEach((h, i) => {
         const today = new Date().toDateString();
         const isLogged = h.lastLogged === today;
@@ -124,5 +140,11 @@ function toggleModal(show) {
     }
 }
 
-function resetSystem() { if(confirm("ERASE DATA?")) { localStorage.clear(); location.reload(); } }
+function resetSystem() { 
+    if(confirm("ERASE DATA?")) { 
+        localStorage.clear(); 
+        location.reload(); 
+    } 
+}
+
 window.onload = render;
