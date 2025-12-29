@@ -2,7 +2,7 @@ let chartInstances = {};
 let state = JSON.parse(localStorage.getItem('solo_arise_v3')) || {
     name: "NEW HUNTER",
     xp: 0, lvl: 1, hp: 100, tasks: [], habits: [], 
-    sleep: [0,0,0,0,0,0,0], totalQuests: 0,
+    sleep: [0,0,0,0,0,0,0],
     activeDays: [], damageDays: [], lastLogin: new Date().toDateString()
 };
 
@@ -139,14 +139,14 @@ function render() {
         
         let actionButtons = '';
         if (!isDone) {
-            if (h.type === 'quit') {
-                actionButtons = `
-                    <button class="btn" onclick="handleHabit(${i}, true)">AVOIDED</button>
-                    <button class="btn btn-red" style="margin-left:5px" onclick="handleHabit(${i}, false)">FAILED</button>
-                `;
-            } else {
-                actionButtons = `<button class="btn" onclick="handleHabit(${i}, true)">DONE</button>`;
-            }
+            // Both Build and Quit now have two options
+            const posText = h.type === 'quit' ? "AVOIDED" : "DONE";
+            const negText = h.type === 'quit' ? "FAILED" : "MISSED";
+            
+            actionButtons = `
+                <button class="btn" onclick="handleHabit(${i}, true)">${posText}</button>
+                <button class="btn btn-red" style="margin-left:5px" onclick="handleHabit(${i}, false)">${negText}</button>
+            `;
         } else {
             const success = h.history[h.history.length-1] === 1;
             actionButtons = success ? '<span class="green-text">✓ SUCCESS</span>' : '<span class="yellow-text">⚠ FAILED</span>';
@@ -161,7 +161,6 @@ function render() {
         `;
         hList.appendChild(card);
         
-        // Dynamic Graph Color Logic
         const pointColors = h.history.map(val => val === 1 ? '#10b981' : val === -1 ? '#ef4444' : 'transparent');
         const ctx = document.getElementById(`hChart-${h.id}`).getContext('2d');
         if (chartInstances[h.id]) chartInstances[h.id].destroy();
