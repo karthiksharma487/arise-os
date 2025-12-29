@@ -1,11 +1,18 @@
 let chartInstances = {};
 let state = JSON.parse(localStorage.getItem('solo_arise_v3')) || {
+    name: "NEW HUNTER",
     xp: 0, lvl: 1, hp: 100, tasks: [], habits: [], 
     sleep: [0,0,0,0,0,0,0], totalQuests: 0,
     activeDays: [], damageDays: [], lastLogin: new Date().toDateString()
 };
 
 function save() { localStorage.setItem('solo_arise_v3', JSON.stringify(state)); render(); }
+
+// Identity Feature
+function changeName() {
+    let n = prompt("IDENTIFY YOURSELF, HUNTER:", state.name);
+    if(n) { state.name = n.toUpperCase(); save(); }
+}
 
 function getStreak(history) {
     let streak = 0;
@@ -15,11 +22,16 @@ function getStreak(history) {
     return streak;
 }
 
+// Daily Reset Feature
 function checkNewDay() {
     const today = new Date().toDateString();
     if (state.lastLogin !== today) {
         state.tasks = [];
-        state.habits.forEach(h => { h.history.push(0); if (h.history.length > 7) h.history.shift(); });
+        state.habits.forEach(h => { 
+            if(!h.history) h.history = [0,0,0,0,0,0,0];
+            h.history.push(0); 
+            if (h.history.length > 7) h.history.shift(); 
+        });
         state.lastLogin = today;
         save();
     }
@@ -28,14 +40,14 @@ function checkNewDay() {
 function gainXP(amt) {
     state.xp += amt;
     const needed = state.lvl * 100;
-    if(state.xp >= needed) { state.xp -= needed; state.lvl++; state.hp = 100; alert("LEVEL UP!"); }
+    if(state.xp >= needed) { state.xp -= needed; state.lvl++; state.hp = 100; alert("✨ LEVEL UP!"); }
     const today = new Date().toDateString();
     if(!state.activeDays.includes(today)) state.activeDays.push(today);
 }
 
 function takeDamage(amt) {
     state.hp = Math.max(0, state.hp - amt);
-    state.xp = Math.max(0, state.xp - Math.floor(amt/2)); // Lose some XP on failure
+    state.xp = Math.max(0, state.xp - Math.floor(amt/2));
     const today = new Date().toDateString();
     if(!state.damageDays.includes(today)) state.damageDays.push(today);
 }
@@ -43,30 +55,43 @@ function takeDamage(amt) {
 function handleHabit(index, success) {
     const h = state.habits[index];
     const todayIdx = h.history.length - 1;
-    
     if (success) {
         h.history[todayIdx] = 1;
         gainXP(20);
-        state.hp = Math.min(100, state.hp + 10); // HEAL 10
+        state.hp = Math.min(100, state.hp + 10);
     } else {
-        h.history[todayIdx] = -1; // -1 marks failure in graph
-        takeDamage(20); // DAMAGE 20
+        h.history[todayIdx] = -1;
+        takeDamage(20);
     }
     save();
 }
 
-// REST OF ACTIONS
 function addT() { 
     const val = document.getElementById('tIn').value; if(!val) return;
     state.tasks.push({ text: val, done: false }); document.getElementById('tIn').value = ''; save(); 
 }
-function completeTask(i) { if(state.tasks[i].done) return; state.tasks[i].done = true; gainXP(10); state.hp = Math.min(100, state.hp + 5); save(); }
+
+function completeTask(i) { 
+    if(state.tasks[i].done) return; 
+    state.tasks[i].done = true; gainXP(10); state.hp = Math.min(100, state.hp + 5); save(); 
+}
+
 function addH() {
     const n = document.getElementById('hIn').value; const t = document.getElementById('hType').value;
     if(!n) return; state.habits.push({ id: Date.now(), name: n, type: t, history: [0,0,0,0,0,0,0] });
     document.getElementById('hIn').value = ''; save();
 }
-function addS() { const v = parseFloat(document.getElementById('sIn').value); if(!v) return; state.sleep[6] = v; gainXP(15); save(); }
+
+// Fixed Sleep Array Push
+function addS() { 
+    const v = parseFloat(document.getElementById('sIn').value); 
+    if(isNaN(v)) return; 
+    state.sleep.push(v);
+    if(state.sleep.length > 7) state.sleep.shift();
+    gainXP(15); 
+    document.getElementById('sIn').value = ''; 
+    save(); 
+}
 
 function toggleModal(show) {
     document.getElementById('historyModal').style.display = show ? 'flex' : 'none';
@@ -85,6 +110,7 @@ function toggleModal(show) {
 
 function render() {
     const needed = state.lvl * 100;
+    document.getElementById('hunterName').innerText = `[ ${state.name} ]`;
     document.getElementById('rankDisplay').innerText = state.lvl >= 10 ? "B-RANK HUNTER" : "E-RANK HUNTER";
     document.getElementById('levelDisplay').innerText = "LVL " + state.lvl;
     document.getElementById('hpFill').style.width = state.hp + "%";
@@ -92,10 +118,19 @@ function render() {
     document.getElementById('hpValue').innerText = `${state.hp} / 100`;
     document.getElementById('xpValue').innerText = `${state.xp} / ${needed}`;
 
+    // Main Sleep Chart Fix
+    const sCtx = document.getElementById('sleepChart').getContext('2d');
+    if (chartInstances['sleep']) chartInstances['sleep'].destroy();
+    chartInstances['sleep'] = new Chart(sCtx, {
+        type: 'bar',
+        data: { labels: ['M','T','W','T','F','S','S'], datasets: [{ data: state.sleep.slice(-7), backgroundColor: '#38bdf8' }] },
+        options: { responsive: true, maintainAspectRatio: false, scales:{y:{display:false}}, plugins: { legend: { display: false } } }
+    });
+
     document.getElementById('tList').innerHTML = state.tasks.map((t, i) => `
         <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #1e293b;">
             <span style="${t.done ? 'text-decoration:line-through; opacity:0.3' : ''}">${t.text}</span>
-            <button class="btn" style="padding:2px 8px" onclick="completeTask(${i})">${t.done ? '✓' : 'GO'}</button>
+            <button class="btn" onclick="completeTask(${i})">${t.done ? '✓' : 'GO'}</button>
         </div>
     `).join('');
 
@@ -104,16 +139,10 @@ function render() {
         const isDone = h.history[h.history.length-1] !== 0;
         const card = document.createElement('div');
         card.className = `habit-card ${h.type === 'quit' ? 'habit-quit' : ''}`;
-        
-        let buttons = `<button class="btn" onclick="handleHabit(${i}, true)">${h.type==='quit'?"DIDN'T":"DONE"}</button>`;
-        if(h.type === 'quit') {
-            buttons += `<button class="btn btn-red" style="margin-left:5px" onclick="handleHabit(${i}, false)">DID</button>`;
-        }
-
         card.innerHTML = `
             <div class="habit-header">
                 <div><b>${h.type.toUpperCase()}</b> ${h.name} <span class="streak-badge">🔥${getStreak(h.history)}</span></div>
-                <div style="display:flex;">${isDone ? '<span class="green-text">LOGGED</span>' : buttons}</div>
+                <div>${isDone ? '✓' : `<button class="btn" onclick="handleHabit(${i}, true)">DONE</button>`}</div>
             </div>
             <div class="chart-box"><canvas id="hChart-${h.id}"></canvas></div>
         `;
@@ -128,5 +157,5 @@ function render() {
     });
 }
 
-function resetSystem() { if(confirm("RESET?")) { localStorage.clear(); location.reload(); } }
+function resetSystem() { if(confirm("RESET ALL DATA?")) { localStorage.clear(); location.reload(); } }
 window.onload = () => { checkNewDay(); render(); };
