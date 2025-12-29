@@ -12,6 +12,7 @@
         <div class="stats-box">
             <div class="header-flex">
                 <div>
+                    <div id="hunterName" onclick="changeName()">[ SET HUNTER NAME ]</div>
                     <div id="rankDisplay">E-RANK HUNTER</div>
                     <div id="levelDisplay">LVL 1</div>
                 </div>
@@ -35,12 +36,13 @@
                     <button class="btn" onclick="addT()">+</button>
                 </div>
                 <div id="tList"></div>
+                
                 <h3 class="yellow-text" style="margin-top:30px;">RECOVERY</h3>
                 <div class="input-group">
                     <input type="number" id="sIn" placeholder="Hours">
                     <button class="btn" onclick="addS()">LOG</button>
                 </div>
-                <div class="chart-box"><canvas id="sleepChart"></canvas></div>
+                <div class="chart-box" style="height:120px;"><canvas id="sleepChart"></canvas></div>
             </div>
 
             <div class="column">
@@ -62,7 +64,6 @@
     <div id="historyModal" class="modal">
         <div class="modal-content">
             <h2 class="cyan-text">PLAYER ARCHIVE</h2>
-            <div id="historyBody"></div>
             <div id="calendarGrid" class="calendar-grid"></div>
             <button class="btn wide" onclick="toggleModal(false)" style="margin-top:20px; width:100%">RETURN</button>
         </div>
