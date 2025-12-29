@@ -1,16 +1,44 @@
 let chartInstances = {};
 let state = JSON.parse(localStorage.getItem('solo_arise_v3')) || {
     name: "NEW HUNTER",
-    xp: 0, lvl: 1, hp: 100, tasks: [], habits: [], 
+    xp: 0, lvl: 1, hp: 100, tasks: [], habits: [],
     sleep: [0,0,0,0,0,0,0],
     activeDays: [], damageDays: [], lastLogin: new Date().toDateString()
 };
+
+const dailyQuotes = [
+    "Arise.", 
+    "The weak have no rights.",
+    "Get stronger. Nobody cares.",
+    "In a world full of monsters, become the strongest.",
+    "Level up in silence.",
+    "The System chose you. Now prove it.",
+    "Shadows obey only the strong.",
+    "One more day. One more level.",
+    "The hunt never ends.",
+    "Become the Monarch."
+];
+
+function getDailyQuote() {
+    const day = new Date().getDate();
+    return dailyQuotes[day % dailyQuotes.length];
+}
+
+function getRank(lvl) {
+    if (lvl >= 100) return "NATIONAL LEVEL HUNTER";
+    if (lvl >= 50) return "S-RANK HUNTER";
+    if (lvl >= 40) return "A-RANK HUNTER";
+    if (lvl >= 30) return "B-RANK HUNTER";
+    if (lvl >= 20) return "C-RANK HUNTER";
+    if (lvl >= 10) return "D-RANK HUNTER";
+    return "E-RANK HUNTER";
+}
 
 function save() { localStorage.setItem('solo_arise_v3', JSON.stringify(state)); render(); }
 
 function changeName() {
     let n = prompt("IDENTIFY YOURSELF, HUNTER:", state.name);
-    if(n) { state.name = n.toUpperCase(); save(); }
+    if (n && n.trim()) { state.name = n.trim().toUpperCase(); save(); }
 }
 
 function getStreak(history) {
@@ -25,10 +53,10 @@ function checkNewDay() {
     const today = new Date().toDateString();
     if (state.lastLogin !== today) {
         state.tasks = [];
-        state.habits.forEach(h => { 
-            if(!h.history) h.history = [0,0,0,0,0,0,0];
-            h.history.push(0); 
-            if (h.history.length > 7) h.history.shift(); 
+        state.habits.forEach(h => {
+            if (!h.history) h.history = [0,0,0,0,0,0,0];
+            h.history.push(0);
+            if (h.history.length > 7) h.history.shift();
         });
         state.lastLogin = today;
         save();
@@ -36,18 +64,34 @@ function checkNewDay() {
 }
 
 function gainXP(amt) {
+    const oldLvl = state.lvl;
     state.xp += amt;
-    const needed = state.lvl * 100;
-    if(state.xp >= needed) { state.xp -= needed; state.lvl++; state.hp = 100; alert("✨ LEVEL UP!"); }
+    let needed = state.lvl * 100;
+    while (state.xp >= needed) {
+        state.xp -= needed;
+        state.lvl++;
+        state.hp = 100;
+        needed = state.lvl * 100;
+    }
     const today = new Date().toDateString();
-    if(!state.activeDays.includes(today)) state.activeDays.push(today);
+    if (!state.activeDays.includes(today)) state.activeDays.push(today);
+    if (state.lvl > oldLvl) {
+        document.getElementById('newLevelNum').innerText = state.lvl;
+        document.getElementById('newRankText').innerText = getRank(state.lvl);
+        document.getElementById('levelUpModal').style.display = 'flex';
+    }
+    save();
+}
+
+function closeLevelUp() {
+    document.getElementById('levelUpModal').style.display = 'none';
 }
 
 function takeDamage(amt) {
     state.hp = Math.max(0, state.hp - amt);
-    state.xp = Math.max(0, state.xp - Math.floor(amt/2));
+    state.xp = Math.max(0, state.xp - Math.floor(amt / 2));
     const today = new Date().toDateString();
-    if(!state.damageDays.includes(today)) state.damageDays.push(today);
+    if (!state.damageDays.includes(today)) state.damageDays.push(today);
 }
 
 function handleHabit(index, success) {
@@ -64,129 +108,141 @@ function handleHabit(index, success) {
     save();
 }
 
-function addT() { 
-    const val = document.getElementById('tIn').value; if(!val) return;
-    state.tasks.push({ text: val, done: false }); document.getElementById('tIn').value = ''; save(); 
+function addT() {
+    const val = document.getElementById('tIn').value.trim();
+    if (!val) return;
+    state.tasks.push({ text: val, done: false });
+    document.getElementById('tIn').value = '';
+    save();
 }
 
-function completeTask(i) { 
-    if(state.tasks[i].done) return; 
-    state.tasks[i].done = true; gainXP(10); state.hp = Math.min(100, state.hp + 5); save(); 
+function completeTask(i) {
+    if (state.tasks[i].done) return;
+    state.tasks[i].done = true;
+    gainXP(10);
+    state.hp = Math.min(100, state.hp + 5);
+    save();
 }
 
 function addH() {
-    const n = document.getElementById('hIn').value; const t = document.getElementById('hType').value;
-    if(!n) return; state.habits.push({ id: Date.now(), name: n, type: t, history: [0,0,0,0,0,0,0] });
-    document.getElementById('hIn').value = ''; save();
+    const n = document.getElementById('hIn').value.trim();
+    const t = document.getElementById('hType').value;
+    if (!n) return;
+    state.habits.push({ id: Date.now(), name: n, type: t, history: [0,0,0,0,0,0,0] });
+    document.getElementById('hIn').value = '';
+    save();
 }
 
-function addS() { 
-    const v = parseFloat(document.getElementById('sIn').value); 
-    if(isNaN(v)) return; 
+function addS() {
+    const v = parseFloat(document.getElementById('sIn').value);
+    if (isNaN(v) || v < 0) return;
     state.sleep.push(v);
-    if(state.sleep.length > 7) state.sleep.shift();
-    gainXP(15); 
-    document.getElementById('sIn').value = ''; 
-    save(); 
-}
-
-function toggleModal(show) {
-    document.getElementById('historyModal').style.display = show ? 'flex' : 'none';
-    if(show) {
-        const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
-        const days = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
-        for(let i=1; i<=days; i++) {
-            const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i).toDateString();
-            let cls = 'cal-day';
-            if(state.activeDays.includes(dStr)) cls += ' cal-success';
-            if(state.damageDays.includes(dStr)) cls += ' cal-damage';
-            grid.innerHTML += `<div class="${cls}">${i}</div>`;
-        }
-    }
+    if (state.sleep.length > 7) state.sleep.shift();
+    gainXP(15);
+    document.getElementById('sIn').value = '';
+    save();
 }
 
 function render() {
     const needed = state.lvl * 100;
-    document.getElementById('hunterName').innerText = `[ ${state.name} ]`;
+    document.getElementById('hunterName').innerText = state.name;
+    document.getElementById('dailyQuote').innerText = getDailyQuote();
     document.getElementById('levelDisplay').innerText = "LVL " + state.lvl;
-    document.getElementById('rankDisplay').innerText = state.lvl >= 10 ? "B-RANK HUNTER" : "E-RANK HUNTER";
-    
+    document.getElementById('rankDisplay').innerText = getRank(state.lvl);
+
     document.getElementById('hpFill').style.width = state.hp + "%";
-    document.getElementById('xpFill').style.width = (state.xp / needed) * 100 + "%";
+    document.getElementById('xpFill').style.width = (state.xp / needed * 100) + "%";
     document.getElementById('hpValue').innerText = `${state.hp} / 100`;
     document.getElementById('xpValue').innerText = `${state.xp} / ${needed}`;
 
+    // Sleep Chart
     const sCtx = document.getElementById('sleepChart').getContext('2d');
-    if (chartInstances['sleep']) chartInstances['sleep'].destroy();
-    chartInstances['sleep'] = new Chart(sCtx, {
+    if (chartInstances.sleep) chartInstances.sleep.destroy();
+    chartInstances.sleep = new Chart(sCtx, {
         type: 'bar',
         data: { labels: ['M','T','W','T','F','S','S'], datasets: [{ data: state.sleep.slice(-7), backgroundColor: '#38bdf8' }] },
-        options: { responsive: true, maintainAspectRatio: false, scales:{y:{display:false}}, plugins: { legend: { display: false } } }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { display: false } }, plugins: { legend: { display: false } } }
     });
 
+    // Daily Tasks
     document.getElementById('tList').innerHTML = state.tasks.map((t, i) => `
-        <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #1e293b;">
-            <span style="${t.done ? 'text-decoration:line-through; opacity:0.3' : ''}">${t.text}</span>
-            <button class="btn" onclick="completeTask(${i})">${t.done ? '✓' : 'GO'}</button>
+        <div>
+            <span style="${t.done ? 'text-decoration:line-through; opacity:0.4;' : ''}">${t.text}</span>
+            <button class="btn system-btn" onclick="completeTask(${i})" ${t.done ? 'disabled' : ''}>
+                ${t.done ? 'CLEARED' : 'CLEAR'}
+            </button>
         </div>
     `).join('');
 
-    const hList = document.getElementById('hList'); hList.innerHTML = '';
+    // Habits with mini calendar
+    const hList = document.getElementById('hList');
+    hList.innerHTML = '';
+    const days = ['M','T','W','T','F','S','S'];
     state.habits.forEach((h, i) => {
-        const isDone = h.history[h.history.length-1] !== 0;
+        const isDone = h.history[h.history.length - 1] !== 0;
         const card = document.createElement('div');
         card.className = `habit-card ${h.type === 'quit' ? 'habit-quit' : ''}`;
-        
+
         let actionButtons = '';
         if (!isDone) {
-            // Both Build and Quit now have two options
             const posText = h.type === 'quit' ? "AVOIDED" : "DONE";
             const negText = h.type === 'quit' ? "FAILED" : "MISSED";
-            
             actionButtons = `
-                <button class="btn" onclick="handleHabit(${i}, true)">${posText}</button>
-                <button class="btn btn-red" style="margin-left:5px" onclick="handleHabit(${i}, false)">${negText}</button>
+                <button class="btn system-btn" onclick="handleHabit(${i}, true)">${posText}</button>
+                <button class="btn system-btn" style="background:#ef4444;" onclick="handleHabit(${i}, false)">${negText}</button>
             `;
         } else {
-            const success = h.history[h.history.length-1] === 1;
-            actionButtons = success ? '<span class="green-text">✓ SUCCESS</span>' : '<span class="yellow-text">⚠ FAILED</span>';
+            actionButtons = h.history[h.history.length - 1] === 1
+                ? '<span class="green-text" style="font-weight:bold;">SUCCESS</span>'
+                : '<span class="yellow-text" style="font-weight:bold;">FAILED</span>';
         }
+
+        const miniCal = '<div class="mini-calendar">' + h.history.map((val, d) => {
+            let cls = 'mini-day';
+            if (val === 1) cls += ' mini-success';
+            if (val === -1) cls += ' mini-damage';
+            return `<div class="${cls}">${days[d]}</div>`;
+        }).join('') + '</div>';
 
         card.innerHTML = `
             <div class="habit-header">
-                <div><b>${h.type.toUpperCase()}</b> ${h.name} <span class="streak-badge">🔥${getStreak(h.history)}</span></div>
-                <div style="display:flex; align-items:center;">${actionButtons}</div>
+                <div>${h.name.toUpperCase()} <span class="streak-badge">🔥 ${getStreak(h.history)}</span></div>
+                <div>${actionButtons}</div>
             </div>
-            <div class="chart-box"><canvas id="hChart-${h.id}"></canvas></div>
+            ${miniCal}
         `;
         hList.appendChild(card);
-        
-        const pointColors = h.history.map(val => val === 1 ? '#10b981' : val === -1 ? '#ef4444' : 'transparent');
-        const ctx = document.getElementById(`hChart-${h.id}`).getContext('2d');
-        if (chartInstances[h.id]) chartInstances[h.id].destroy();
-        chartInstances[h.id] = new Chart(ctx, {
-            type: 'line',
-            data: { 
-                labels: ['','','','','','',''], 
-                datasets: [{ 
-                    data: h.history, 
-                    borderColor: h.type === 'quit' ? '#ef4444' : '#10b981', 
-                    tension: 0.4, 
-                    pointRadius: 4,
-                    pointBackgroundColor: pointColors,
-                    pointBorderColor: 'transparent'
-                }] 
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                animation: false, 
-                scales: { x: { display: false }, y: { display: false, min: -1.5, max: 1.5 } }, 
-                plugins: { legend: { display: false } } 
-            }
-        });
     });
+
+    // Calendar in sidebar
+    const grid = document.getElementById('calendarGrid');
+    grid.innerHTML = '';
+    const year = new Date().getFullYear();
+    const month = new Date().getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    for (let i = 1; i <= daysInMonth; i++) {
+        const dStr = new Date(year, month, i).toDateString();
+        let cls = 'cal-day';
+        if (state.activeDays.includes(dStr)) cls += ' cal-success';
+        if (state.damageDays.includes(dStr)) cls += ' cal-damage';
+        grid.innerHTML += `<div class="${cls}">${i}</div>`;
+    }
 }
 
-function resetSystem() { if(confirm("RESET ALL DATA?")) { localStorage.clear(); location.reload(); } }
-window.onload = () => { checkNewDay(); render(); };
+function resetSystem() {
+    if (confirm("REAWAKEN THE SYSTEM? ALL DATA WILL BE LOST.")) {
+        localStorage.removeItem('solo_arise_v3');
+        location.reload();
+    }
+}
+
+window.onload = () => {
+    checkNewDay();
+    if (state.name === "NEW HUNTER") {
+        setTimeout(() => changeName(), 1000);
+    }
+    render();
+
+    document.getElementById('menuBtn').onclick = () => document.getElementById('sidebar').classList.add('open');
+    document.getElementById('closeSidebar').onclick = () => document.getElementById('sidebar').classList.remove('open');
+};
