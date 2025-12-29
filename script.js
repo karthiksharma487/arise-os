@@ -8,7 +8,6 @@ let state = JSON.parse(localStorage.getItem('solo_arise_v3')) || {
 
 function save() { localStorage.setItem('solo_arise_v3', JSON.stringify(state)); render(); }
 
-// Identity Feature
 function changeName() {
     let n = prompt("IDENTIFY YOURSELF, HUNTER:", state.name);
     if(n) { state.name = n.toUpperCase(); save(); }
@@ -22,7 +21,6 @@ function getStreak(history) {
     return streak;
 }
 
-// Daily Reset Feature
 function checkNewDay() {
     const today = new Date().toDateString();
     if (state.lastLogin !== today) {
@@ -82,7 +80,6 @@ function addH() {
     document.getElementById('hIn').value = ''; save();
 }
 
-// Fixed Sleep Array Push
 function addS() { 
     const v = parseFloat(document.getElementById('sIn').value); 
     if(isNaN(v)) return; 
@@ -111,14 +108,14 @@ function toggleModal(show) {
 function render() {
     const needed = state.lvl * 100;
     document.getElementById('hunterName').innerText = `[ ${state.name} ]`;
-    document.getElementById('rankDisplay').innerText = state.lvl >= 10 ? "B-RANK HUNTER" : "E-RANK HUNTER";
     document.getElementById('levelDisplay').innerText = "LVL " + state.lvl;
+    document.getElementById('rankDisplay').innerText = state.lvl >= 10 ? "B-RANK HUNTER" : "E-RANK HUNTER";
+    
     document.getElementById('hpFill').style.width = state.hp + "%";
     document.getElementById('xpFill').style.width = (state.xp / needed) * 100 + "%";
     document.getElementById('hpValue').innerText = `${state.hp} / 100`;
     document.getElementById('xpValue').innerText = `${state.xp} / ${needed}`;
 
-    // Main Sleep Chart Fix
     const sCtx = document.getElementById('sleepChart').getContext('2d');
     if (chartInstances['sleep']) chartInstances['sleep'].destroy();
     chartInstances['sleep'] = new Chart(sCtx, {
@@ -139,20 +136,55 @@ function render() {
         const isDone = h.history[h.history.length-1] !== 0;
         const card = document.createElement('div');
         card.className = `habit-card ${h.type === 'quit' ? 'habit-quit' : ''}`;
+        
+        let actionButtons = '';
+        if (!isDone) {
+            if (h.type === 'quit') {
+                actionButtons = `
+                    <button class="btn" onclick="handleHabit(${i}, true)">AVOIDED</button>
+                    <button class="btn btn-red" style="margin-left:5px" onclick="handleHabit(${i}, false)">FAILED</button>
+                `;
+            } else {
+                actionButtons = `<button class="btn" onclick="handleHabit(${i}, true)">DONE</button>`;
+            }
+        } else {
+            const success = h.history[h.history.length-1] === 1;
+            actionButtons = success ? '<span class="green-text">✓ SUCCESS</span>' : '<span class="yellow-text">⚠ FAILED</span>';
+        }
+
         card.innerHTML = `
             <div class="habit-header">
                 <div><b>${h.type.toUpperCase()}</b> ${h.name} <span class="streak-badge">🔥${getStreak(h.history)}</span></div>
-                <div>${isDone ? '✓' : `<button class="btn" onclick="handleHabit(${i}, true)">DONE</button>`}</div>
+                <div style="display:flex; align-items:center;">${actionButtons}</div>
             </div>
             <div class="chart-box"><canvas id="hChart-${h.id}"></canvas></div>
         `;
         hList.appendChild(card);
+        
+        // Dynamic Graph Color Logic
+        const pointColors = h.history.map(val => val === 1 ? '#10b981' : val === -1 ? '#ef4444' : 'transparent');
         const ctx = document.getElementById(`hChart-${h.id}`).getContext('2d');
         if (chartInstances[h.id]) chartInstances[h.id].destroy();
         chartInstances[h.id] = new Chart(ctx, {
             type: 'line',
-            data: { labels: ['','','','','','',''], datasets: [{ data: h.history, borderColor: '#10b981', tension: 0.4, pointRadius: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
+            data: { 
+                labels: ['','','','','','',''], 
+                datasets: [{ 
+                    data: h.history, 
+                    borderColor: h.type === 'quit' ? '#ef4444' : '#10b981', 
+                    tension: 0.4, 
+                    pointRadius: 4,
+                    pointBackgroundColor: pointColors,
+                    pointBorderColor: 'transparent'
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                animation: false, 
+                scales: { x: { display: false }, y: { display: false, min: -1.5, max: 1.5 } }, 
+                plugins: { legend: { display: false } } 
+            }
         });
     });
 }
