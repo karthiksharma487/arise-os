@@ -4,20 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solo Leveling: Arise OS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="stats-box">
+            <div class="top-header">
+                <button id="menuBtn" class="system-btn">SYSTEM</button>
+                <div id="hunterName" onclick="changeName()">NEW HUNTER</div>
+                <div id="dailyQuote"></div>
+            </div>
+
             <div class="header-flex">
                 <div>
-                    <div id="hunterName" onclick="changeName()">[ SET HUNTER NAME ]</div>
                     <div id="rankDisplay">E-RANK HUNTER</div>
                     <div id="levelDisplay">LVL 1</div>
                 </div>
-                <button class="btn secondary" onclick="toggleModal(true)">SYSTEM LOGS</button>
             </div>
+
             <div class="bar-container">
                 <div class="bar-label"><span>HEALTH (HP)</span> <span id="hpValue">100 / 100</span></div>
                 <div class="bar-bg"><div id="hpFill" class="bar-fill hp-fill"></div></div>
@@ -33,16 +39,16 @@
                 <h3 class="cyan-text">DAILY QUESTS</h3>
                 <div class="input-group">
                     <input type="text" id="tIn" placeholder="Enter quest...">
-                    <button class="btn" onclick="addT()">+</button>
+                    <button class="btn system-btn" onclick="addT()">ACCEPT QUEST</button>
                 </div>
                 <div id="tList"></div>
-                
-                <h3 class="yellow-text" style="margin-top:30px;">RECOVERY</h3>
+
+                <h3 class="yellow-text" style="margin-top:40px;">RECOVERY GATE</h3>
                 <div class="input-group">
-                    <input type="number" id="sIn" placeholder="Hours">
-                    <button class="btn" onclick="addS()">LOG</button>
+                    <input type="number" step="0.5" id="sIn" placeholder="Hours recovered">
+                    <button class="btn system-btn" onclick="addS()">LOG RECOVERY</button>
                 </div>
-                <div class="chart-box" style="height:120px;"><canvas id="sleepChart"></canvas></div>
+                <div class="chart-box"><canvas id="sleepChart"></canvas></div>
             </div>
 
             <div class="column">
@@ -50,24 +56,43 @@
                 <div class="input-group">
                     <input type="text" id="hIn" placeholder="Skill name...">
                     <select id="hType">
-                        <option value="good">BUILD</option>
+                        <option value="build">BUILD</option>
                         <option value="quit">QUIT</option>
                     </select>
-                    <button class="btn" onclick="addH()">+</button>
+                    <button class="btn system-btn" onclick="addH()">AWAKEN SKILL</button>
                 </div>
                 <div class="scroll-area" id="hList"></div>
             </div>
         </div>
-        <center><button class="reset-link" onclick="resetSystem()">RESET SYSTEM</button></center>
+
+        <center>
+            <button class="reset-link system-btn" onclick="resetSystem()">REAWAKEN SYSTEM</button>
+        </center>
     </div>
 
-    <div id="historyModal" class="modal">
-        <div class="modal-content">
-            <h2 class="cyan-text">PLAYER ARCHIVE</h2>
-            <div id="calendarGrid" class="calendar-grid"></div>
-            <button class="btn wide" onclick="toggleModal(false)" style="margin-top:20px; width:100%">RETURN</button>
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar">
+        <button id="closeSidebar" class="btn system-btn btn-red">CLOSE</button>
+        <h2 class="cyan-text">SYSTEM GUIDE</h2>
+        <p>The System has chosen you. Complete Daily Quests and awaken Skills to gain XP.</p>
+        <p>Build powerful habits to grow stronger. Quit vices to avoid damage.</p>
+        <p>Log recovery to heal HP. Level up restores full health and advances your rank.</p>
+        <p>Consistency builds streaks. The hunt never ends.</p>
+
+        <h2 class="green-text">GATE HISTORY</h2>
+        <div id="calendarGrid" class="calendar-grid"></div>
+    </div>
+
+    <!-- Level Up Modal -->
+    <div id="levelUpModal" class="modal">
+        <div class="levelup-content">
+            <h1 class="levelup-title">LEVEL UP!</h1>
+            <div class="levelup-level">LVL <span id="newLevelNum">2</span></div>
+            <div class="rank-reveal" id="newRankText">D-RANK HUNTER</div>
+            <button class="btn system-btn" onclick="closeLevelUp()">CONTINUE</button>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
